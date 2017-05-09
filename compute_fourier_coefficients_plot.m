@@ -1,4 +1,4 @@
-function fourierCoeff = compute_fourier_coefficients(data, surrogateDate, dataDate, metaData)
+function [fourierCoeff, stationData]  = compute_fourier_coefficients_plot(data, surrogateDate, dataDate, metaData)
 % This function computes the fourierCoeffecients for a (typically longer)
 % surrogate based on the fourierCoefficients of the stations, which all
 % have a different lenght. The Fourier coefficients of the stations thus
@@ -10,6 +10,8 @@ noValues = size(surrogateDate.day,1);
 freqSurrogate = calc_fourier_frequencies(1, noValues);
 fourierCoeff = NaN*zeros(numel(freqSurrogate), noStations);
 
+totalNaNValues = 0;
+totalObsValues = 0;
 onlyHighfrequencies = 0;
 if onlyHighfrequencies
     cutOffFreq = 1/(2.5*365.24); % Frequencies below this threshold (time scales above this threshold) are not taken into account in generating the surrogate
@@ -62,6 +64,7 @@ else
         end
         % Perform a median filtering to detect long segments with missing
         % data, but ignore short missing data segments.
+        stationDataNaNUnfiltered = stationDataNaN;
         stationDataNaN = medfilt1(stationDataNaN,100); %  the function considers the signal to be 0 beyond the end points.
 %         figure(12), plot(stationDataNaN, 'rx')
         
@@ -93,10 +96,16 @@ else
                 end 
             end            
             stationData = stationData(ibMax:ieMax);           
-            stationDataNaN = stationDataNaN(ibMax:ieMax);           
+            stationDataNaN = stationDataNaN(ibMax:ieMax);          
+            stationDataNaNUnfiltered = stationDataNaNUnfiltered(ibMax:ieMax);
             index = find(stationDataNaN == 1);
-            disp(index)
-        end
+            disp(numel(index))
+        end        
+        totalNaNValues = totalNaNValues + numel(find(stationDataNaNUnfiltered==1));
+        totalObsValues   = totalObsValues + numel(find(stationDataNaNUnfiltered==0));
+        % disp(numel(stationDataNaNUnfiltered==1)) 
+        disp(['# NaN: ', num2str(totalNaNValues)]) 
+        disp(['# Obs: ', num2str(totalObsValues)]) 
         
         % Make the observational data the same length as the surrogate data
         % we need by mirroring it and cutting it to size.

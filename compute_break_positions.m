@@ -8,7 +8,7 @@ function iPos = compute_break_positions(data, date, noValues, taperBreakFreqBegi
 breakFreq = ones(1,noValues)/13; 
 
 if ( taperBreakFreqBegin )
-    % First 15 years the frequency grually grows from one per 10 years to one per 13 years
+    % First 15 years the frequency gradually declines from one per 10 years to one per 13 years
     index = find(isfinite(data)); % Compute first year with data.
     indexBegin = index(1); clear index;
     dateBegin = date.year(indexBegin);
